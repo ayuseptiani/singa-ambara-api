@@ -7,21 +7,42 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
-    // Ambil semua data kamar
+    // Ambil semua kamar (Public)
     public function index()
     {
-        return response()->json(Room::all());
+        return Room::all();
     }
 
-    // Ambil detail 1 kamar berdasarkan slug (contoh: /rooms/panji)
+    // Ambil detail 1 kamar (Public)
     public function show($slug)
     {
-        $room = Room::where('slug', $slug)->first();
+        return Room::where('slug', $slug)->firstOrFail();
+    }
 
-        if (!$room) {
-            return response()->json(['message' => 'Kamar tidak ditemukan'], 404);
-        }
+    // --- TAMBAHAN BARU: FUNGSI UPDATE (KHUSUS ADMIN) ---
+    public function update(Request $request, $id)
+    {
+        // Cari kamar berdasarkan ID, kalau ga ada error 404
+        $room = Room::findOrFail($id);
 
-        return response()->json($room);
+        // Validasi input dari Admin
+        $request->validate([
+            'price'       => 'numeric', // Harga harus angka
+            'total_units' => 'integer', // Stok harus bulat
+            'capacity'    => 'integer', // Kapasitas harus bulat
+        ]);
+
+        // Simpan perubahan ke database
+        // Kita gunakan $request->only biar aman, cuma field ini yang boleh diganti
+        $room->update($request->only([
+            'price', 
+            'total_units', 
+            'capacity'
+        ]));
+
+        return response()->json([
+            'message' => 'Data kamar berhasil diperbarui',
+            'data'    => $room
+        ]);
     }
 }

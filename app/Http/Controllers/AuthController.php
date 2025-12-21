@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -28,14 +27,14 @@ class AuthController extends Controller
             'role' => 'user', // Default role
         ]);
 
-        // Buat token (Kunci masuk)
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Buat token (Tiket masuk)
+        // $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Registrasi berhasil',
             'user' => $user,
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            // 'access_token' => $token,
+            // 'token_type' => 'Bearer',
         ], 201);
     }
 
@@ -49,6 +48,8 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request['email'])->firstOrFail();
+        
+        // Buat token baru
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -56,21 +57,25 @@ class AuthController extends Controller
             'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'role' => $user->role // Kirim role juga biar frontend tau
         ]);
     }
 
-    // 3. LOGOUT
+    // 3. LOGOUT (PERBAIKAN PENTING DI SINI)
     public function logout(Request $request)
     {
-        // Hapus semua token user ini (biar aman)
-        $request->user()->tokens()->delete();
+        // PERHATIKAN: Kita hanya menghapus "currentAccessToken" (Token saat ini).
+        // Ini TIDAK MENGHAPUS USER dari database.
+        // Hanya menghapus tiket masuknya saja.
+        
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logout berhasil'
         ]);
     }
 
-    // 4. CEK USER PROFILE (Untuk melihat siapa yang login)
+    // 4. CEK USER PROFILE
     public function userProfile(Request $request)
     {
         return response()->json($request->user());
