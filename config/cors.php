@@ -12,7 +12,11 @@ return [
     'allowed_methods' => ['*'],
 
     // UBAH BARIS INI: Izinkan localhost:3000 akses ke sini
-    'allowed_origins' => ['http://localhost:3000'], 
+    'allowed_origins' => [
+    'https://singa-ambara-suites.web.id',
+    'https://www.singa-ambara-suites.web.id',
+    'http://localhost:3000', // Biarkan ini agar laptop tetap bisa akses
+    ], 
 
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
